@@ -14,9 +14,13 @@ def register_user(request):
             password = data.get('password')
 
             if not username or not password:
-                return JsonResponse({'error': 'Username and password are required'}, status=400)
-
-            # 비밀번호 해싱 (보안 강화)
+                return JsonResponse({'error': '아이디와 비밀번호를 입력해주세요'}, status=400)
+            
+            # 아이디 중복 체크
+            if Account.objects.filter(username = username).exists():
+                return JsonResponse({'error' : '이미 중복된 아이디 입니다.'}, status=400)
+            
+            # 비밀번호 해싱을 통한 보안 강화
             hashed_password = make_password(password)
 
             # 유저 저장
