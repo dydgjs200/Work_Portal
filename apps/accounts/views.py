@@ -63,3 +63,14 @@ def login_user(request):
         
     return JsonResponse({'error': 'Invalid request method'}, status=405)
     
+
+@csrf_exempt
+def logout_user(request):
+    if request.method == "POST":
+        if not request.session.get('user_id'):  # 로그아웃이 되어있는지 확인
+            return JsonResponse({'error': 'User is already logout'}, status=400)
+
+        request.session.flush()  # 세션 삭제
+        return JsonResponse({'message': 'logout successfully'}, status=200)
+
+    return JsonResponse({'error': 'Invalid request method'}, status=405)
