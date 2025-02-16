@@ -3,7 +3,7 @@ from django.http import JsonResponse
 import json
 from .models import Account
 from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth.hashers import make_password
+from django.contrib.auth.hashers import make_password, check_password
 
 @csrf_exempt  # CSRF 우회 (테스트용)
 def register_user(request):
@@ -32,3 +32,33 @@ def register_user(request):
             return JsonResponse({'error': 'Invalid JSON'}, status=400)
 
     return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+def login_user(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            username = data.get('username')
+            password = data.get('password')
+
+            # username 확인
+            try:
+                user = Account.objects.filter(username = username)
+            except Account.DoesNotExist:
+                return JsonResponse({'error': 'username not in DB'}, status=400)
+            
+            # password 검증
+            if check_password(password, user.password):
+                return JsonResponse({'error' : 'not correct password'}, status = 400)
+            
+            # session 로그인
+            request.session['user_id'] = user.id
+            request.session['password'] = user.password
+
+            return JsonResponse({'message': 'Login successful'}, status=200)
+
+
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON'}, status = 400)
+        
+    return JsonResponse({'error': 'Invalid request method'}, status=405)
+    
