@@ -33,6 +33,7 @@ def register_user(request):
 
     return JsonResponse({'error': 'Invalid request method'}, status=405)
 
+@csrf_exempt
 def login_user(request):
     if request.method == "POST":
         try:
@@ -42,12 +43,12 @@ def login_user(request):
 
             # username 확인
             try:
-                user = Account.objects.filter(username = username)
+                user = Account.objects.get(username = username)
             except Account.DoesNotExist:
                 return JsonResponse({'error': 'username not in DB'}, status=400)
             
             # password 검증
-            if check_password(password, user.password):
+            if not check_password(password, user.password):
                 return JsonResponse({'error' : 'not correct password'}, status = 400)
             
             # session 로그인
