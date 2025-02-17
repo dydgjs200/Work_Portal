@@ -9,10 +9,10 @@ class WebLink(models.Model):
         ('others', '기타 자료')
     ]
     id = models.AutoField(primary_key=True)
-    created_by = models.CharField(max_length=20, unique=True)       # 작성한 사용자
+    created_by = models.CharField(max_length=20)       # 작성한 사용자
     name = models.CharField(max_length=100)     # 웹 링크 이름
     url = models.CharField(max_length=200)      # 주소 길이
     category = models.CharField(max_length=20, choices=CATEGORY, default='personal')
 
     def __str__(self):
-        return self.username
+        return self.name
