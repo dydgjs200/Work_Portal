@@ -31,7 +31,7 @@ def add_feed(request):
     return JsonResponse({'error': 'Invalid request method'}, status=405)
 
 @csrf_exempt
-def edit_Feed(request):
+def edit_feed(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
@@ -45,8 +45,8 @@ def edit_Feed(request):
             user = get_object_or_404(Account, username=created_by)
             user_role = user.role  # role 속성 가져오기
 
-            # 유저의 권한이 충분하지 않다면 비승인
-            if user_role != "admin":
+            # 유저의 권한이 충분하지 않다면 or 본인이 아닐 시 비승인
+            if user_role != "admin" or created_by != user.username:
                 return JsonResponse({'message' : "Unauthorized User"}, status = 403)
             
             # 수정할 feed 가져오기
@@ -65,12 +65,33 @@ def edit_Feed(request):
 
     return JsonResponse({'error': 'Invalid request method'}, status=405)
 
+# 사용자가 작성한 모든 피드
+@csrf_exempt
+def all_my_feed(request, username):
+    if request.method == "GET":
+        # username으로 Account 아이디 검증
+        user = get_object_or_404(Account, username=username)
+
+        # 사용자의 모든 피드 가져오기
+        feeds = WebLink.objects.filter(created_by=user)
+
+        # JSON 응답 생성
+        feed_list = [
+            {"id": feed.id, "name": feed.name, "url": feed.url, "category": feed.category}
+            for feed in feeds
+        ]
+        
+        return JsonResponse({"username": username, "feeds": feed_list}, status=200)
+
+    return JsonResponse({'error': 'Invalid request method'}, status=405)
+
 
 @csrf_exempt
 def delete_feed(request):
     if request.method == "POST":
         try:
             data = json.loads(request.body)
+
 
         except:
             return
